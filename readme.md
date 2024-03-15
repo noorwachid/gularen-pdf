@@ -2,7 +2,6 @@
 PDF generator for Gularen markup language
 
 > [!WARNING]
-> 
 > Under development
 
 ## Installation

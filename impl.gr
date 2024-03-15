@@ -1,0 +1,46 @@
+>>> Implementation Details
+
+>> Page Configuration
+[ ] Size
+[ ] Margin
+
+>> Text
+[ ] Text wrap
+	[ ] Calculate current word if it fits in the current line
+[ ] Entity margin
+[ ] Paragraph indent first line
+[ ] Text alignment
+
+>> Page Manipulation
+[ ] Footnote placement
+[ ] Page Break
+
+>> Builder
+[ ] Reference
+[ ] Table
+
+>> Feature Progress
+[ ] Comment
+[ ] Annotation
+[ ] Paragraph
+[ ] Style
+[ ] Highlight
+[ ] Break
+[ ] Indentation
+[ ] Blockquote
+[ ] Heading
+[ ] List
+[ ] Check list
+[ ] Definition list
+[ ] Code (without highlighting)
+[ ] Table
+[ ] Admonition
+[ ] Datetime
+[ ] Tag
+[ ] Linker
+[ ] Viewer (image only: jpg, pdf, & gif)
+[ ] Inclusion
+[ ] Citation
+[ ] Footnote
+[ ] Punctuation
+[ ] Emoji

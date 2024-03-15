@@ -1,0 +1,23 @@
+Language: Cpp
+
+BasedOnStyle: Microsoft
+
+UseTab: Always
+
+BreakBeforeBraces: Attach
+IndentWidth: 4
+AlignAfterOpenBracket: BlockIndent
+PointerAlignment: Left
+
+NamespaceIndentation: All
+FixNamespaceComments: false
+
+BinPackArguments: true
+
+ColumnLimit: 120
+
+AlwaysBreakTemplateDeclarations: Yes
+
+IndentCaseLabels: true
+AccessModifierOffset: -4
+
