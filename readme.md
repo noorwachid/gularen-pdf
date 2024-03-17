@@ -6,7 +6,7 @@ PDF generator for Gularen markup language
 
 ## Overview
 
-<img width="1440" alt="Screenshot" src="https://github.com/noorwachid/gularen-pdf/assets/42460975/93e70ca1-0530-4a2d-9c6f-d6c809f9323f">
+<img width="1440" alt="Screenshot" src="https://github.com/noorwachid/gularen-pdf/assets/42460975/69e3bcf6-f170-40e0-8361-9d5750b2ef38">
 
 ## Installation
 
