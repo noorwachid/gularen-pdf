@@ -11,12 +11,19 @@ struct FontFamily {
 	PdfFont* italic;
 };
 
+enum class TextAlignment {
+	left,
+	center,
+	right,
+};
+
 struct TextStyle {
 	FontFamily fontFamily;
 	double fontSize;
 	double topSpacing;
 	double bottomSpacing;
 	double lineSpacing;
+	TextAlignment alignment;
 };
 
 struct Margin {
@@ -31,14 +38,17 @@ struct PageStyle {
 	Margin margin;
 };
 
-struct HeadingStyle {
-	Margin margin;
-	TextStyle text;
-};
-
 struct ParagraphStyle {
 	Margin margin;
 	TextStyle text;
 };
 
+struct HeadingStyle {
+	Margin margin;
+	TextStyle text;
+};
+
+struct IndentStyle {
+	Margin margin;
+};
 

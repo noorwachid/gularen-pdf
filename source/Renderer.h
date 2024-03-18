@@ -28,19 +28,44 @@ public:
 			_paragraphStyle.text.bottomSpacing = 0;
 			_paragraphStyle.text.lineSpacing = 4;
 			_paragraphStyle.margin.top = 0;
-			_paragraphStyle.margin.bottom = 8;
+			_paragraphStyle.margin.bottom = 12;
 			_paragraphStyle.margin.left = 0;
 			_paragraphStyle.margin.right = 0;
 
-			_chapterStyle.text.fontFamily = fontFamily;
-			_chapterStyle.text.fontSize = 24;
-			_chapterStyle.text.topSpacing = 0;
-			_chapterStyle.text.bottomSpacing = 4;
-			_chapterStyle.text.lineSpacing = 0;
-			_chapterStyle.margin.top = 0;
-			_chapterStyle.margin.bottom = 18;
-			_chapterStyle.margin.left = 0;
-			_chapterStyle.margin.right = 0;
+			_sectionStyle.text.fontFamily = fontFamily;
+			_sectionStyle.text.fontSize = 24;
+			_sectionStyle.text.topSpacing = 0;
+			_sectionStyle.text.bottomSpacing = 4;
+			_sectionStyle.text.lineSpacing = 0;
+			_sectionStyle.margin.top = 0;
+			_sectionStyle.margin.bottom = 18;
+			_sectionStyle.margin.left = 0;
+			_sectionStyle.margin.right = 0;
+
+			_subsectionStyle.text.fontFamily = fontFamily;
+			_subsectionStyle.text.fontSize = 20;
+			_subsectionStyle.text.topSpacing = 0;
+			_subsectionStyle.text.bottomSpacing = 4;
+			_subsectionStyle.text.lineSpacing = 0;
+			_subsectionStyle.margin.top = 0;
+			_subsectionStyle.margin.bottom = 16;
+			_subsectionStyle.margin.left = 0;
+			_subsectionStyle.margin.right = 0;
+
+			_subsubsectionStyle.text.fontFamily = fontFamily;
+			_subsubsectionStyle.text.fontSize = 18;
+			_subsubsectionStyle.text.topSpacing = 0;
+			_subsubsectionStyle.text.bottomSpacing = 4;
+			_subsubsectionStyle.text.lineSpacing = 0;
+			_subsubsectionStyle.margin.top = 0;
+			_subsubsectionStyle.margin.bottom = 12;
+			_subsubsectionStyle.margin.left = 0;
+			_subsubsectionStyle.margin.right = 0;
+
+			_indentStyle.margin.top = 0;
+			_indentStyle.margin.bottom = 0;
+			_indentStyle.margin.left = 24;
+			_indentStyle.margin.right = 0;
 
 			try {
 				_createPage();
@@ -52,7 +77,7 @@ public:
 					throw runtime_error("cannot parse cache/in.gr");
 				}
 
-				_compose(document);
+				_composeBlock(document);
 
 			} catch (PdfError& err) {
 				if (err.GetCode() == PdfErrorCode::InvalidFontData) {
@@ -78,11 +103,11 @@ public:
 		}
 	}
 
-	void _compose(Gularen::Node* node) {
+	void _composeBlock(Gularen::Node* node) {
 		switch (node->kind) {
 			case Gularen::NodeKind::document: {
-				for (unsigned int i = 0; i < node->children.size(); i += 1) {
-					_compose(node->children.get(i));
+				for (size_t i = 0; i < node->children.size(); i += 1) {
+					_composeBlock(node->children[i]);
 				}
 				break;
 			}
@@ -91,32 +116,46 @@ public:
 				break;
 			}
 			case Gularen::NodeKind::heading: {
-				_composeHeading(node);
+				switch (static_cast<const Gularen::Heading*>(node)->type) {
+					case Gularen::Heading::Type::section:
+						_composeHeading(node, _sectionStyle);
+						break;
+					case Gularen::Heading::Type::subsection:
+						_composeHeading(node, _subsectionStyle);
+						break;
+					case Gularen::Heading::Type::subsubsection:
+						_composeHeading(node, _subsubsectionStyle);
+						break;
+				}
+				break;
+			}
+			case Gularen::NodeKind::indent: {
+				_composeIndent(node);
 				break;
 			}
 			default: break;
 		}
 	}
 
-	void _composeHeading(Gularen::Node* node) {
-		_setTextStyle(&_chapterStyle.text);
+	void _composeHeading(Gularen::Node* node, HeadingStyle& style) {
+		_setTextStyle(&style.text);
 
-		for (unsigned int i = 0; i < node->children.size(); i += 1) {
-			_composeInline(node->children.get(i));
+		for (size_t i = 0; i < node->children.size(); i += 1) {
+			_composeInline(node->children[i]);
 		}
 
 		const PdfFontMetrics& metrics = _activeFont->GetMetrics();
 
 		_cursor.y += ((metrics.GetAscent() + abs(metrics.GetDescent())) * _activeTextStyle->fontSize);
-		_cursor.y += _chapterStyle.margin.bottom;
+		_cursor.y += style.margin.bottom;
 		_cursor.x = _pageStyle.margin.left;
 	}
 
 	void _composeParagraph(Gularen::Node* node) {
 		_setTextStyle(&_paragraphStyle.text);
 
-		for (unsigned int i = 0; i < node->children.size(); i += 1) {
-			_composeInline(node->children.get(i));
+		for (size_t i = 0; i < node->children.size(); i += 1) {
+			_composeInline(node->children[i]);
 		}
 
 		const PdfFontMetrics& metrics = _activeFont->GetMetrics();
@@ -131,7 +170,7 @@ public:
 			case Gularen::NodeKind::text: {
 				auto text = static_cast<Gularen::Text*>(node);
 
-				_drawText(string_view(text->content.pointer(), text->content.size()));
+				_drawText(text->content);
 				break;
 			}
 
@@ -146,10 +185,25 @@ public:
 						_setFontStyle(PdfFontStyle::Italic);
 						break;
 				}
-				for (unsigned int i = 0; i < node->children.size(); i += 1) {
-					_composeInline(node->children.get(i));
+				for (size_t i = 0; i < node->children.size(); i += 1) {
+					_composeInline(node->children[i]);
 				}
 				_setFontStyle(PdfFontStyle::Regular);
+				break;
+			}
+
+			case Gularen::NodeKind::highlight: {
+				for (size_t i = 0; i < node->children.size(); i += 1) {
+					_composeInline(node->children[i]);
+				}
+				break;
+			}
+
+			case Gularen::NodeKind::indent: {
+				auto& metrics = _activeFont->GetMetrics();
+				_cursor.y += ((metrics.GetAscent() + abs(metrics.GetDescent())) * _activeTextStyle->fontSize);
+				_cursor.y += _paragraphStyle.margin.bottom;
+				_composeIndent(node);
 				break;
 			}
 
@@ -157,10 +211,19 @@ public:
 		}
 	}
 
-	// PDF 0.0 is at bottom left
-	// |
-	// |
-	// +-----
+	void _composeIndent(const Gularen::Node* node) {
+		const PdfFontMetrics& metrics = _activeFont->GetMetrics();
+		double oldMarginLeft = _pageStyle.margin.left;
+		_pageStyle.margin.left += _indentStyle.margin.left;
+		_cursor.x = _pageStyle.margin.left;
+
+		for (size_t i = 0; i < node->children.size(); i += 1) {
+			_composeBlock(node->children[i]);
+		}
+
+		_pageStyle.margin.left = oldMarginLeft;
+		_cursor.x = _pageStyle.margin.left;
+	}
 
 	void _setTextStyle(TextStyle* style) {
 		_activeTextStyle = style;
@@ -207,6 +270,8 @@ public:
 				}
 			}
 
+
+			// PDF 0,0 is at bottom left, this code translating the 0,0 at top left
 			_painter.DrawText(word, _cursor.x, pageHeight - _cursor.y - ascent);
 
 			_cursor.x += length + spaceLength;
@@ -214,6 +279,7 @@ public:
 	}
 
 	void _drawMarginLines() {
+		return;
 		_painter.DrawLine(
 			0, 
 			_activePage->GetRect().Height - _pageStyle.margin.top, 
@@ -266,8 +332,14 @@ private:
 	TextStyle* _activeTextStyle;
 
 	PageStyle _pageStyle;
+
 	ParagraphStyle _paragraphStyle;
-	HeadingStyle _chapterStyle;
+
+	HeadingStyle _sectionStyle;
+	HeadingStyle _subsectionStyle;
+	HeadingStyle _subsubsectionStyle;
+
+	IndentStyle _indentStyle;
 
 private:
 	struct Cursor {

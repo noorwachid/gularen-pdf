@@ -1,5 +1,13 @@
 >>> Implementation Details
 
+>> Document Configuration
+
+> Document Type
+[ ] None
+[ ] Book
+[ ] Notebook
+[ ] Presentation
+
 >> Page Configuration
 [ ] Size
 [ ] Margin
@@ -22,11 +30,11 @@
 >> Feature Progress
 [ ] Comment
 [ ] Annotation
-[ ] Paragraph
-[ ] Style
+[x] Paragraph
+[x] Style
 [ ] Highlight
 [ ] Break
-[ ] Indentation
+[x] Indentation
 [ ] Blockquote
 [ ] Heading
 [ ] List
