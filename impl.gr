@@ -36,11 +36,13 @@
 [ ] Break
 [x] Indentation
 [ ] Blockquote
-[ ] Heading
+[x] Heading
 [ ] List
 [ ] Check list
 [ ] Definition list
-[ ] Code (without highlighting)
+[ ] Code 
+	[ ] Without highlighting
+	[ ] Create simple lexer (keywords, strings, numbers) for common programming languages at the moment
 [ ] Table
 [ ] Admonition
 [ ] Datetime

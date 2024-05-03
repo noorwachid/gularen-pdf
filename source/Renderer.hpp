@@ -1,10 +1,10 @@
 #pragma once
 
 #include <iostream>
-#include "Style.h"
-#include "FontFamilyLoader.h"
-#include "WordIterator.h"
-#include "Gularen/Frontend/Parser.h"
+#include "Style.hpp"
+#include "FontFamilyLoader.hpp"
+#include "WordIterator.hpp"
+#include "Gularen/Frontend/Parser.hpp"
 
 using std::cout;
 using std::endl;
@@ -32,35 +32,35 @@ public:
 			_paragraphStyle.margin.left = 0;
 			_paragraphStyle.margin.right = 0;
 
+			_chapterStyle.text.fontFamily = fontFamily;
+			_chapterStyle.text.fontSize = 24;
+			_chapterStyle.text.topSpacing = 0;
+			_chapterStyle.text.bottomSpacing = 4;
+			_chapterStyle.text.lineSpacing = 0;
+			_chapterStyle.margin.top = 0;
+			_chapterStyle.margin.bottom = 18;
+			_chapterStyle.margin.left = 0;
+			_chapterStyle.margin.right = 0;
+
 			_sectionStyle.text.fontFamily = fontFamily;
-			_sectionStyle.text.fontSize = 24;
+			_sectionStyle.text.fontSize = 20;
 			_sectionStyle.text.topSpacing = 0;
 			_sectionStyle.text.bottomSpacing = 4;
 			_sectionStyle.text.lineSpacing = 0;
 			_sectionStyle.margin.top = 0;
-			_sectionStyle.margin.bottom = 18;
+			_sectionStyle.margin.bottom = 16;
 			_sectionStyle.margin.left = 0;
 			_sectionStyle.margin.right = 0;
 
 			_subsectionStyle.text.fontFamily = fontFamily;
-			_subsectionStyle.text.fontSize = 20;
+			_subsectionStyle.text.fontSize = 18;
 			_subsectionStyle.text.topSpacing = 0;
 			_subsectionStyle.text.bottomSpacing = 4;
 			_subsectionStyle.text.lineSpacing = 0;
 			_subsectionStyle.margin.top = 0;
-			_subsectionStyle.margin.bottom = 16;
+			_subsectionStyle.margin.bottom = 12;
 			_subsectionStyle.margin.left = 0;
 			_subsectionStyle.margin.right = 0;
-
-			_subsubsectionStyle.text.fontFamily = fontFamily;
-			_subsubsectionStyle.text.fontSize = 18;
-			_subsubsectionStyle.text.topSpacing = 0;
-			_subsubsectionStyle.text.bottomSpacing = 4;
-			_subsubsectionStyle.text.lineSpacing = 0;
-			_subsubsectionStyle.margin.top = 0;
-			_subsubsectionStyle.margin.bottom = 12;
-			_subsubsectionStyle.margin.left = 0;
-			_subsubsectionStyle.margin.right = 0;
 
 			_indentStyle.margin.top = 0;
 			_indentStyle.margin.bottom = 0;
@@ -111,25 +111,34 @@ public:
 				}
 				break;
 			}
+			case Gularen::NodeKind::heading: {
+				Gularen::Heading* oldHeading = _activeHeading;
+				_activeHeading = static_cast<Gularen::Heading*>(node);
+				for (size_t i = 0; i < node->children.size(); i += 1) {
+					_composeBlock(node->children[i]);
+				}
+				_activeHeading = oldHeading;
+				break;
+			}
 			case Gularen::NodeKind::paragraph: {
 				_composeParagraph(node);
 				break;
 			}
-			case Gularen::NodeKind::heading: {
-				switch (static_cast<const Gularen::Heading*>(node)->type) {
+			case Gularen::NodeKind::title: {
+				switch (static_cast<const Gularen::Heading*>(_activeHeading)->type) {
+					case Gularen::Heading::Type::chapter:
+						_composeHeading(node, _chapterStyle);
+						break;
 					case Gularen::Heading::Type::section:
 						_composeHeading(node, _sectionStyle);
 						break;
 					case Gularen::Heading::Type::subsection:
 						_composeHeading(node, _subsectionStyle);
 						break;
-					case Gularen::Heading::Type::subsubsection:
-						_composeHeading(node, _subsubsectionStyle);
-						break;
 				}
 				break;
 			}
-			case Gularen::NodeKind::indent: {
+			case Gularen::NodeKind::quote: {
 				_composeIndent(node);
 				break;
 			}
@@ -174,15 +183,20 @@ public:
 				break;
 			}
 
-			case Gularen::NodeKind::style: {
-				auto style = static_cast<Gularen::Style*>(node);
+			case Gularen::NodeKind::emphasis: {
+				auto style = static_cast<Gularen::Emphasis*>(node);
 				switch (style->type) {
-					case Gularen::Style::Type::bold:
+					case Gularen::Emphasis::Type::bold:
 						_setFontStyle(PdfFontStyle::Bold);
 						break;
 
-					case Gularen::Style::Type::italic:
+					case Gularen::Emphasis::Type::italic:
 						_setFontStyle(PdfFontStyle::Italic);
+						break;
+
+					case Gularen::Emphasis::Type::underline:
+						// TODO: add underline
+						_setFontStyle(PdfFontStyle::Regular);
 						break;
 				}
 				for (size_t i = 0; i < node->children.size(); i += 1) {
@@ -199,7 +213,7 @@ public:
 				break;
 			}
 
-			case Gularen::NodeKind::indent: {
+			case Gularen::NodeKind::quote: {
 				auto& metrics = _activeFont->GetMetrics();
 				_cursor.y += ((metrics.GetAscent() + abs(metrics.GetDescent())) * _activeTextStyle->fontSize);
 				_cursor.y += _paragraphStyle.margin.bottom;
@@ -335,11 +349,13 @@ private:
 
 	ParagraphStyle _paragraphStyle;
 
+	HeadingStyle _chapterStyle;
 	HeadingStyle _sectionStyle;
 	HeadingStyle _subsectionStyle;
-	HeadingStyle _subsubsectionStyle;
 
 	IndentStyle _indentStyle;
+
+	Gularen::Heading* _activeHeading;
 
 private:
 	struct Cursor {

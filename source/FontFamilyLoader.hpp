@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Style.h"
+#include "Style.hpp"
 #include <podofo/podofo.h>
 
 using namespace PoDoFo;
